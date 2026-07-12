@@ -125,7 +125,7 @@ export default function AdminDashboard() {
                   <ArrowUp className="w-3 h-3" /> 12%
                 </div>
               </div>
-              <div className="text-3xl font-bold text-text-body leading-none">{stats?.total_patients || 0}</div>
+              <div className="text-3xl font-bold text-text-body leading-none">{stats?.total_users || 0}</div>
               <div className="text-sm text-text-muted mt-1 font-medium">Total Patients</div>
             </div>
 
@@ -165,7 +165,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div className="text-3xl font-bold text-text-body leading-none">
-                {stats?.avg_pain_score !== undefined && stats?.avg_pain_score !== null ? stats.avg_pain_score : '--'}
+                {stats?.avg_pain_last_30_days !== undefined && stats?.avg_pain_last_30_days !== null ? stats.avg_pain_last_30_days : '--'}
               </div>
               <div className="text-sm text-text-muted mt-1 font-medium">Avg Pain Score</div>
             </div>

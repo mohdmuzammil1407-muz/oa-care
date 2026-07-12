@@ -9,7 +9,7 @@ import {
 
 export default function AdminLogin() {
   const navigate = useNavigate();
-  const { login, user } = useAuth();
+  const { login, logout, user } = useAuth();
   
   useEffect(() => {
     if (user?.role === 'admin') navigate('/admin', { replace: true })
@@ -37,6 +37,7 @@ export default function AdminLogin() {
         // Patient tried admin portal — block and clear session
         localStorage.removeItem('oa_token');
         localStorage.removeItem('oa_user');
+        logout(false);
         setError(
           'Access denied. This portal is for administrators only. ' +
           'Please use the patient login page.'

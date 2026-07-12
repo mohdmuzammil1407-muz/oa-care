@@ -103,7 +103,7 @@ export default function PatientDashboard() {
     date: new Date(entry.date || entry.recorded_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
     pain: entry.pain_score, stiffness: entry.stiffness_score
   }));
-  const avgPainScore = stats?.avg_pain_score !== undefined && stats?.avg_pain_score !== null ? stats.avg_pain_score : null;
+  const avgPainScore = stats?.avg_pain_last_30_days !== undefined && stats?.avg_pain_last_30_days !== null ? stats.avg_pain_last_30_days : null;
 
   return (
     <div className="min-h-screen bg-bg-main flex flex-col">

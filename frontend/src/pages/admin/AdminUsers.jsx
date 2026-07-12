@@ -87,6 +87,7 @@ export default function AdminUsers() {
   const [loading, setLoading] = useState(true);
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [activityLoading, setActivityLoading] = useState(false);
+  const [activityError, setActivityError] = useState(null);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -119,9 +120,13 @@ export default function AdminUsers() {
   async function openActivity(userId) {
     setActivityLoading(true);
     setSelectedActivity(null);
+    setActivityError(null);
     try {
       const response = await adminAPI.getUserActivity(userId);
       setSelectedActivity(response.data);
+    } catch (err) {
+      console.error("Failed to load activity", err);
+      setActivityError("Unable to load patient activity. Please try again.");
     } finally {
       setActivityLoading(false);
     }
@@ -298,11 +303,11 @@ export default function AdminUsers() {
           </div>
         </div>
 
-      {(selectedActivity || activityLoading) && (
+      {(selectedActivity || activityLoading || activityError) && (
         <aside className="fixed right-0 top-0 z-50 h-screen w-full overflow-y-auto bg-white p-6 shadow-2xl md:w-[34rem]">
           <div className="flex items-center justify-between gap-4">
             <h2 className="text-3xl font-extrabold text-slate-950">Patient Activity</h2>
-            <button type="button" onClick={() => setSelectedActivity(null)} className="min-h-12 min-w-12 rounded-md border border-slate-200">
+            <button type="button" onClick={() => { setSelectedActivity(null); setActivityError(null); }} className="min-h-12 min-w-12 rounded-md border border-slate-200">
               <X aria-hidden="true" className="mx-auto h-6 w-6" />
             </button>
           </div>
@@ -310,6 +315,10 @@ export default function AdminUsers() {
             <div className="mt-10 text-center text-lg font-bold text-slate-600">
               <Loader2 aria-hidden="true" className="mx-auto mb-3 h-7 w-7 animate-spin" />
               Loading activity...
+            </div>
+          ) : activityError ? (
+            <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4 text-red-700 font-semibold">
+              {activityError}
             </div>
           ) : (
             <div className="mt-6 grid gap-6">

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { FileText, Download, ExternalLink, AlertCircle, MessageCircle, Mail, Phone } from 'lucide-react';
+import { ExternalLink, AlertCircle, MessageCircle, Mail, Phone } from 'lucide-react';
 
 export default function Resources() {
   useEffect(() => {
@@ -22,22 +22,40 @@ export default function Resources() {
           </div>
         </div>
 
-        {/* Section 1 */}
+        {/* Section 1: Understanding Osteoarthritis */}
         <section className="bg-white section-pad">
           <div className="container-main max-w-4xl mx-auto">
-            <div className="card bg-gradient-to-r from-primary to-primary-light text-white flex flex-col md:flex-row items-center gap-6 p-8 border-0">
-              <div className="shrink-0">
-                <FileText className="w-16 h-16 text-white/80" />
+            <h2 className="section-title text-center">Understanding Osteoarthritis</h2>
+            <p className="section-subtitle text-center mb-8">
+              Osteoarthritis (OA) is the most common form of arthritis, affecting millions of people worldwide. It occurs when the protective cartilage that cushions the ends of the bones wears down over time.
+            </p>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="card border border-slate-100 p-6 rounded-2xl bg-slate-50/50">
+                <h3 className="font-heading font-bold text-lg text-primary-dark mb-3 mt-0 flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-primary shrink-0" />
+                  Common Symptoms
+                </h3>
+                <ul className="space-y-2 text-slate-600 text-sm pl-4 list-disc">
+                  <li><strong>Pain:</strong> Affected joints may hurt during or after movement.</li>
+                  <li><strong>Stiffness:</strong> Joint stiffness might be most noticeable upon awakening or after being inactive.</li>
+                  <li><strong>Tenderness:</strong> The joint might feel tender when applying light pressure to or near it.</li>
+                  <li><strong>Loss of flexibility:</strong> You might not be able to move the joint through its full range of motion.</li>
+                  <li><strong>Grating sensation:</strong> You might feel or hear a scraping or popping sensation when using the joint.</li>
+                </ul>
               </div>
-              <div className="flex-1 text-center md:text-left">
-                <h2 className="text-2xl font-heading text-white mb-1 mt-0">OA Patient Guide</h2>
-                <p className="text-blue-100 mb-1 text-sm">Hip & Knee Osteoarthritis — Complete Patient Handbook</p>
-                <p className="text-blue-200 text-xs m-0">Includes symptoms, treatments, exercises and daily tips</p>
-              </div>
-              <div className="shrink-0 mt-4 md:mt-0">
-                <button className="bg-white text-primary hover:bg-blue-50 rounded-xl px-6 py-3 font-semibold flex items-center gap-2 border-0 cursor-pointer transition-colors">
-                  <Download className="w-4 h-4 shrink-0" /> Download PDF
-                </button>
+
+              <div className="card border border-slate-100 p-6 rounded-2xl bg-slate-50/50">
+                <h3 className="font-heading font-bold text-lg text-primary-dark mb-3 mt-0 flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
+                  Evidence-Based Self-Care
+                </h3>
+                <ul className="space-y-2 text-slate-600 text-sm pl-4 list-disc">
+                  <li><strong>Low-Impact Exercise:</strong> Activities like swimming, cycling, and walking strengthen muscles around the joints without putting excessive impact on them.</li>
+                  <li><strong>Weight Management:</strong> Maintaining a healthy weight reduces the load on weight-bearing joints (such as hips and knees) and minimizes inflammatory markers.</li>
+                  <li><strong>Physical Therapy:</strong> Structured exercises under guidance help restore mobility, flexibility, and stability.</li>
+                  <li><strong>Temperature Therapy:</strong> Applying heat helps relax stiff muscles, while cold packs can relieve acute joint swelling and pain.</li>
+                </ul>
               </div>
             </div>
           </div>

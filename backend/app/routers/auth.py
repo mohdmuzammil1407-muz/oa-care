@@ -1,12 +1,13 @@
 from datetime import datetime
 from typing import Literal, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.models import User
+from app.utils.limiter import limiter
 from app.utils.security import create_access_token, hash_password, verify_password
 
 
@@ -41,8 +42,13 @@ class TokenResponse(BaseModel):
 
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
-def register(request: RegisterRequest, db: Session = Depends(get_db)):
-    existing_user = db.query(User).filter(User.email == request.email).first()
+@limiter.limit("3/hour")
+def register(
+    request: Request,
+    data: RegisterRequest,
+    db: Session = Depends(get_db)
+):
+    existing_user = db.query(User).filter(User.email == data.email).first()
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -50,17 +56,17 @@ def register(request: RegisterRequest, db: Session = Depends(get_db)):
         )
 
     user = User(
-        full_name=request.full_name,
-        email=request.email,
-        phone=request.phone,
-        password_hash=hash_password(request.password),
-        age=request.age,
-        gender=request.gender,
-        weight_kg=request.weight_kg,
-        height_cm=request.height_cm,
-        oa_location=request.oa_location,
-        oa_grade=request.oa_grade,
-        comorbidities=request.comorbidities,
+        full_name=data.full_name,
+        email=data.email,
+        phone=data.phone,
+        password_hash=hash_password(data.password),
+        age=data.age,
+        gender=data.gender,
+        weight_kg=data.weight_kg,
+        height_cm=data.height_cm,
+        oa_location=data.oa_location,
+        oa_grade=data.oa_grade,
+        comorbidities=data.comorbidities,
         role="patient",
     )
     db.add(user)
@@ -71,9 +77,14 @@ def register(request: RegisterRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=TokenResponse)
-def login(request: LoginRequest, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == request.email).first()
-    if user is None or not verify_password(request.password, user.password_hash):
+@limiter.limit("5/minute")
+def login(
+    request: Request,
+    data: LoginRequest,
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.email == data.email).first()
+    if user is None or not verify_password(data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",

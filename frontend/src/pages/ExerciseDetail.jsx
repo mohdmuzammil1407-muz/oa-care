@@ -5,6 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import { exercisesAPI, progressAPI } from '../services/api';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { exerciseVideos } from '../data/exerciseVideos';
+import { exercises as staticExercises } from '../data/exercises';
 import {
   ChevronLeft,
   Play,
@@ -29,6 +31,8 @@ export default function ExerciseDetail() {
 
   const [exercise, setExercise] = useState(null);
   const [notFound, setNotFound] = useState(false);
+  const [videoError, setVideoError] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (exercise) {
@@ -53,8 +57,17 @@ export default function ExerciseDetail() {
   useEffect(() => {
     const fetchExercise = async () => {
       try {
+        setError(null);
         const response = await exercisesAPI.getOne(id);
-        setExercise(response.data);
+        const dbEx = response.data;
+        const name = (dbEx.title || dbEx.name || '').toLowerCase().trim();
+        const staticEx = staticExercises.find(
+          ex => (ex.title || '').toLowerCase().trim() === name
+        );
+        setExercise({
+          ...dbEx,
+          videoKey: staticEx?.videoKey || ''
+        });
         if (isAuthenticated) {
           try {
             const statusRes = await progressAPI.getStatuses();
@@ -68,6 +81,8 @@ export default function ExerciseDetail() {
         console.error("Failed to fetch exercise details", error);
         if (error.response?.status === 404) {
           setNotFound(true);
+        } else {
+          setError("Unable to load exercise details. Please try again.");
         }
       } finally {
         setLoading(false);
@@ -164,6 +179,25 @@ export default function ExerciseDetail() {
         <Navbar />
         <div className="container-main pt-6 flex-1 flex justify-center items-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <Navbar />
+        <div className="container-main section-pad text-center flex-1 flex flex-col items-center justify-center">
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-8 max-w-md mx-auto text-red-700 font-semibold">
+            {error}
+            <div className="mt-6">
+              <Link to="/exercises" className="btn-primary inline-flex items-center no-underline">
+                Back to Exercise Library
+              </Link>
+            </div>
+          </div>
         </div>
         <Footer />
       </div>
@@ -270,8 +304,23 @@ export default function ExerciseDetail() {
                   className="bg-slate-50 rounded-2xl aspect-video flex flex-col items-center justify-center mb-6 border border-slate-200 overflow-hidden relative"
                   style={{ aspectRatio: '16/9' }}
                 >
-                  <Play className="text-slate-300 w-12 h-12 mb-2" />
-                  <span className="text-slate-400 text-sm mt-2 font-medium">Video coming soon</span>
+                  {exercise.videoKey && !videoError ? (
+                    <video
+                      src={exerciseVideos[exercise.videoKey]}
+                      controls
+                      playsInline
+                      preload="metadata"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '1rem' }}
+                      onError={() => setVideoError(true)}
+                    />
+                  ) : (
+                    <>
+                      <Play className="text-slate-300 w-12 h-12 mb-2" />
+                      <span className="text-slate-400 text-sm mt-2 font-medium">
+                        {videoError ? "Video unavailable" : "Video coming soon"}
+                      </span>
+                    </>
+                  )}
                 </div>
               )}
 

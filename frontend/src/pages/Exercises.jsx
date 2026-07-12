@@ -117,6 +117,7 @@ export default function Exercises() {
   const [exercises,         setExercises]         = useState([]);
   const [filteredExercises, setFilteredExercises] = useState([]);
   const [loading,           setLoading]           = useState(true);
+  const [error,             setError]             = useState(null);
 
   const [areaFilter,  setAreaFilter]  = useState('all');
   const [typeFilter,  setTypeFilter]  = useState('all');
@@ -125,6 +126,7 @@ export default function Exercises() {
   useEffect(() => {
     const fetchExercises = async () => {
       setLoading(true);
+      setError(null);
       try {
         const response = await exercisesAPI.getAll();
         const data = response.data?.items || response.data;
@@ -154,6 +156,7 @@ export default function Exercises() {
         setFilteredExercises(mergedList);
       } catch (error) {
         console.error('Failed to fetch exercises', error);
+        setError('Unable to load exercises. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -341,6 +344,10 @@ export default function Exercises() {
                   style={{ boxShadow: '0 12px 30px rgba(17,169,226,0.08)' }}
                 />
               ))
+            ) : error ? (
+              <div className="bg-red-50 border border-red-200 rounded-[26px] p-12 text-center col-span-full text-red-700 font-semibold">
+                {error}
+              </div>
             ) : filteredExercises.length === 0 ? (
               <div className="bg-white rounded-[26px] p-12 text-center col-span-full"
                 style={{ boxShadow: '0 12px 30px rgba(17,169,226,0.10)' }}>

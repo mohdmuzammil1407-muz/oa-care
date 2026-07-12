@@ -41,11 +41,13 @@ export function AuthProvider({ children }) {
     }
   };
 
-  function logout() {
+  function logout(shouldRedirect = true) {
     localStorage.removeItem("oa_token");
     localStorage.removeItem("oa_user");
     setUser(null);
-    window.location.href = '/';
+    if (shouldRedirect) {
+      window.location.href = '/';
+    }
   }
 
   const isAdmin = user?.role === 'admin';
