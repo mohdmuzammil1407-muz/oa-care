@@ -12,3 +12,4 @@ python-multipart
 cloudinary
 httpx
 slowapi
+bcrypt==4.0.1
