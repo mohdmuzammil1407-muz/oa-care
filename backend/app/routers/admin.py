@@ -8,8 +8,8 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.models import Exercise, ExerciseLog, PainDiary, User, ExerciseStatus
-from app.routers.exercises import HIP_EXERCISES, KNEE_EXERCISES
 from app.utils.security import require_admin
+from app.utils.seed import seed_exercises as seed_exercises_db
 
 
 router = APIRouter(dependencies=[Depends(require_admin)])
@@ -280,19 +280,7 @@ def toggle_user_active(user_id: UUID, db: Session = Depends(get_db)):
 
 @router.post("/seed-exercises")
 def seed_exercises(db: Session = Depends(get_db)):
-    existing_count = db.query(Exercise).count()
-    if existing_count > 0:
-        return {"message": "Exercises already seeded", "inserted_count": 0}
-
-    seed_data = KNEE_EXERCISES + HIP_EXERCISES
-    exercises = [
-        Exercise(sort_order=index + 1, **exercise_data)
-        for index, exercise_data in enumerate(seed_data)
-    ]
-    db.add_all(exercises)
-    db.commit()
-
-    return {"message": "Exercises seeded successfully", "inserted_count": len(exercises)}
+    return seed_exercises_db(db)
 
 
 @router.get("/exercise-status-overview")

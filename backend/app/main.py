@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
@@ -5,9 +7,17 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
 from app.config import settings
-from app.database import Base, engine
+from app.database import Base, engine, SessionLocal
 from app.routers import admin, auth, exercises, progress, users
 from app.utils.limiter import limiter
+from app.utils.seed import create_tables, seed_exercises, create_default_admin
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 
 app = FastAPI(title="OA Patient Platform API", version="1.0.0")
@@ -30,7 +40,16 @@ async def add_security_headers(request: Request, call_next):
 
 @app.on_event("startup")
 def on_startup():
-    Base.metadata.create_all(bind=engine)
+    create_tables()
+    db = SessionLocal()
+    try:
+        seed_exercises(db)
+        create_default_admin(db)
+    except Exception as e:
+        logger.error(f"Error during startup data initialization: {e}")
+        db.rollback()
+    finally:
+        db.close()
 
 
 app.add_middleware(
