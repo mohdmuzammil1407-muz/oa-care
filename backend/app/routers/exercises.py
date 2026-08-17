@@ -476,10 +476,12 @@ def get_exercise_or_404(exercise_id: UUID, db: Session) -> Exercise:
 
 
 @router.get("/", response_model=list[ExerciseOut])
+@router.get("", response_model=list[ExerciseOut], include_in_schema=False)
 def list_exercises(
     target_area: Optional[TargetArea] = Query(default=None),
     level: Optional[ExerciseLevel] = Query(default=None),
     category: Optional[ExerciseCategory] = Query(default=None),
+    limit: Optional[int] = Query(default=None, ge=1, le=100),
     db: Session = Depends(get_db),
 ):
     query = db.query(Exercise).filter(Exercise.is_active.is_(True))
@@ -496,7 +498,12 @@ def list_exercises(
     if category:
         query = query.filter(Exercise.category == category)
 
-    return query.order_by(Exercise.sort_order, Exercise.name).all()
+    query = query.order_by(Exercise.sort_order, Exercise.name)
+
+    if limit is not None:
+        query = query.limit(limit)
+
+    return query.all()
 
 
 @router.get("/{exercise_id}", response_model=ExerciseOut)
@@ -505,6 +512,7 @@ def get_exercise(exercise_id: UUID, db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=ExerciseOut, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=ExerciseOut, status_code=status.HTTP_201_CREATED, include_in_schema=False)
 def create_exercise(
     exercise_data: ExerciseCreate,
     db: Session = Depends(get_db),

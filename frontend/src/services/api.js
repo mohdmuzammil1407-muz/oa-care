@@ -2,7 +2,18 @@ import axios from "axios";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
+  timeout: 15000,
 });
+
+const EXERCISES_ENDPOINT = "/api/exercises/";
+
+function cleanParams(params) {
+  if (!params) return undefined;
+
+  return Object.fromEntries(
+    Object.entries(params).filter(([, value]) => value !== undefined && value !== null && value !== ""),
+  );
+}
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("oa_token");
@@ -15,7 +26,7 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !error.config?.skipAuthRedirect) {
       const isAuthRoute = error.config.url?.includes('/auth/')
       if (!isAuthRoute) {
         localStorage.removeItem("oa_token");
@@ -28,17 +39,53 @@ api.interceptors.response.use(
   },
 );
 
+export function getApiErrorDetails(error, serviceName = "service") {
+  if (error.code === "ECONNABORTED") {
+    return {
+      type: "timeout",
+      message: `The ${serviceName} request timed out. Please try again.`,
+    };
+  }
+
+  if (!error.response) {
+    return {
+      type: "network",
+      message: `Unable to connect to the ${serviceName}. Please check your connection and try again.`,
+    };
+  }
+
+  const status = error.response.status;
+  const messages = {
+    401: "Your session has expired. Please sign in again.",
+    403: `You do not have permission to access the ${serviceName}.`,
+    404: `${serviceName[0].toUpperCase()}${serviceName.slice(1)} endpoint is unavailable.`,
+    500: `The ${serviceName} is temporarily unavailable.`,
+  };
+
+  return {
+    type: "http",
+    status,
+    message: messages[status] || `The ${serviceName} returned an unexpected error.`,
+  };
+}
+
 export const authAPI = {
   register: (data) => api.post("/api/auth/register", data),
   login: (data) => api.post("/api/auth/login", data),
 };
 
+const exerciseRequestConfig = (params) => ({
+  params: cleanParams(params),
+  skipAuthRedirect: true,
+});
+
 export const exercisesAPI = {
-  getAll: (params) => api.get("/api/exercises/", { params }),
-  getOne: (id) => api.get(`/api/exercises/${id}`),
-  create: (data) => api.post("/api/exercises/", data),
-  update: (id, data) => api.put(`/api/exercises/${id}`, data),
-  delete: (id) => api.delete(`/api/exercises/${id}`),
+  list: (params) => api.get(EXERCISES_ENDPOINT, exerciseRequestConfig(params)),
+  getAll: (params) => exercisesAPI.list(params),
+  getOne: (id) => api.get(`${EXERCISES_ENDPOINT}${id}`, exerciseRequestConfig()),
+  create: (data) => api.post(EXERCISES_ENDPOINT, data),
+  update: (id, data) => api.put(`${EXERCISES_ENDPOINT}${id}`, data),
+  delete: (id) => api.delete(`${EXERCISES_ENDPOINT}${id}`),
 };
 
 export const progressAPI = {

@@ -164,7 +164,7 @@ export default function Home() {
   useEffect(() => {
     const fetchExercises = async () => {
       try {
-        const response = await exercisesAPI.getAll({ limit: 3 });
+        const response = await exercisesAPI.list({ limit: 3 });
         const data = response.data?.items || response.data;
         setExercises(Array.isArray(data) ? data.slice(0, 3) : []);
       } catch (error) {

@@ -20,6 +20,14 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+allowed_origins = sorted({
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://oa-care.vercel.app",
+    settings.FRONTEND_URL.rstrip("/"),
+})
+
+
 app = FastAPI(title="OA Patient Platform API", version="1.0.0")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
@@ -54,12 +62,7 @@ def on_startup():
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "https://oa-care.vercel.app",
-        settings.FRONTEND_URL,
-    ],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type"],

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { exercisesAPI } from '../services/api';
+import { exercisesAPI, getApiErrorDetails } from '../services/api';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ExerciseCard from '../components/ExerciseCard';
@@ -128,9 +128,18 @@ export default function Exercises() {
       setLoading(true);
       setError(null);
       try {
-        const response = await exercisesAPI.getAll();
+        const response = await exercisesAPI.list();
         const data = response.data?.items || response.data;
         const list = Array.isArray(data) ? data : [];
+
+        if (!Array.isArray(data)) {
+          console.error('Exercise service returned an empty or invalid response', response.data);
+          setError('The exercise service returned an empty response.');
+          setExercises([]);
+          setFilteredExercises([]);
+          return;
+        }
+
         const mergedList = list.map(dbEx => {
           const name = (dbEx.title || dbEx.name || '').toLowerCase().trim();
           const staticEx = staticExercises.find(
@@ -156,7 +165,7 @@ export default function Exercises() {
         setFilteredExercises(mergedList);
       } catch (error) {
         console.error('Failed to fetch exercises', error);
-        setError('Unable to load exercises. Please try again.');
+        setError(getApiErrorDetails(error, 'exercise service').message);
       } finally {
         setLoading(false);
       }
